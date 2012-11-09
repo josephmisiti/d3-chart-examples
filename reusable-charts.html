@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<svg id="chart-svg"></svg>
+
+
+<style>
+
+text {
+  font: 12px sans-serif;
+}
+
+</style>
+<body>
+<script src="d3.v2.js"></script>
+<!-- <script src="nvd3.js"></script> -->
+
+<script>
+
+function ageRanges(){
+	return ["Under 18", "18-24", "25-32", "33-40", "41-50", "51-60", "Over 60"]
+}
+
+function getDashboardPieColors() {
+	return ['#71c857', '#4ca233', '#51c199', '#51c175', '#85db02', '#7d886c', '#8df26f', '#454a44' ];
+}
+
+
+var socialq = {}
+socialq.models = {}
+
+socialq.models.pie = function() {
+	function chart(selection){
+		selection.each(function(data){ 
+	
+		});
+	}
+	return chart;
+}
+
+
+socialq.pieChart = function() {
+	var width = 720
+		,height = 80
+		,margin = { top : 20, bottom : 20, left : 20, right : 20 }
+  		,pie = socialq.models.pie()
+		;
+
+
+	function chart(selection){
+		selection.each(function(data){
+			var svg_container = d3.select(this);
+			// container.selectAll('g.nv-wrap.nv-pieChart')
+			// 		.data([1])
+			// 		.enter()
+			// 		.append('g')
+			// 		.attr('class','pie-chart-wrapper')
+		})
+	}
+	chart.width = function(value) {
+	 if (!arguments.length) return width;
+	 width = value;
+	 return my;
+	};
+
+	chart.height = function(value) {
+	 if (!arguments.length) return height;
+	 height = value;
+	 return my;
+	};
+
+	return chart;
+}
+
+var myChart = socialq.pieChart();
+
+var container = d3.select("#chart-svg")
+				  .datum([1,2,3,4,5])  
+				  .call(myChart)
+
+
+// var width = 250,
+//     height = 400,
+// 	margin = { top : 20, bottom: 20, left:20, right: 20}
+//     radius = Math.min(width, height) / 2,
+//     data = d3.range(10).map(Math.random).sort(d3.descending).slice(0,ageRanges().length),
+//     color = getDashboardPieColors(),
+//     arc = d3.svg.arc().outerRadius(radius),
+// 	dispatch = d3.dispatch('legendClick', 'legendDblclick', 'legendMouseover', 'legendMouseout'),
+//     donut = d3.layout.pie();
+// 
+// 	var xxx = test_chart();
+// 	var data = [1,2,3,4,5,6];
+// 	
+// 	var container = d3.select("body").append("svg")
+// 		.data(data)
+// 		.attr("class", "chart")
+// 		
+// 	var container = d3.select("body").append("svg")
+// 		.datum(data)
+// 		.attr("class", "chart")
+
+
+	// var wrap = container.select('g.nv-wrap.nv-pieChart')
+	// 					.datum([data])
+	// 					.append('g')
+	// 					.attr('class','pie-chart-wrapper')
+							
+
+		
+
+	
+		
+
+
+	// var wrap = container.selectAll('g.nv-wrap.nv-pieChart')
+	// 					.data([data]);
+	// 
+	// var gEnter = wrap.enter().append('g')
+	// 				.attr('class', 'nvd3 nv-wrap nv-pieChart')
+	// 				.append('g');
+	// 			
+	// var g = wrap.select('g');
+	// 
+	// gEnter.append('g').attr('class', 'nv-pieWrap');
+	// gEnter.append('g').attr('class', 'nv-legendWrap');
+	// 
+	// // pie charts
+	// 
+	// wrap.select('.nv-pieWrap')
+	// 	.data(donut)
+	// 	.enter().append("g")
+	// 	.attr("class", "arc")
+	// 	.attr("transform", "translate(" + radius + "," + radius + ")");
+
+
+
+
+
+
+
+
+</script>
+
+
+
+

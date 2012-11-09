@@ -9,47 +9,170 @@ text {
 
 </style>
 <body>
-<script src="d3.v2.js"></script>
-<script src="nvd3.js"></script>
 
+<svg id="chart-svg"></svg>
+	
+<script src="d3.v2.js"></script>
+<!-- <script src="nvd3.js"></script> -->
 <script>
+
+
+
+function ageRanges(){
+	return ["Under 18", "18-24", "25-32", "33-40", "41-50", "51-60", "Over 60"]
+}
 
 function getDashboardPieColors() {
 	return ['#71c857', '#4ca233', '#51c199', '#51c175', '#85db02', '#7d886c', '#8df26f', '#454a44' ];
 }
 
+var socialq = {}
+socialq.models = {}
+
+socialq.models.legend = function() { 
+	function chart(selection){
+		selection.each(function(data){ 
+			var container = d3.select(this);
+
+			var legend = container.selectAll(".legend-wrap")
+							.data(data)
+							.enter()
+							.append('g')
+							.attr('class','sq-series')
+							.append('circle')
+							.attr('fill', function(d,i) { return getDashboardPieColors()[i]})
+							.attr('r',6)
+							.attr("transform", function(d,i){ return "translate(" + 0 + "," + i*20  + ")"  })
+							.on('click', function(d,i) {
+					            dispatch.legendClick(d,i);
+					          })
+
+			container.selectAll(".sq-series")
+						.append('text')	
+						.text(function(d,i) { return ageRanges()[i]; })
+						.attr("transform", function(d,i){ return "translate(" + 0 + "," + i*20  + ")"  })	
+						.attr('dx',15)
+						.attr('dy',5)
+
+			
+		});
+	}
+	return chart;
+}
+
+socialq.models.pieChart = function() {
+	var width = 250
+		,height = 400
+		,legend = socialq.models.legend()
+		,margin = { top : 20, bottom: 20, left:20, right: 20}
+	    ,radius = Math.min(width, height) / 2
+	    ,color = getDashboardPieColors()
+	    ,arc = d3.svg.arc().outerRadius(radius)
+	    ,donut = d3.layout.pie()
+		;
+	
+	function chart(selection){
+		selection.each(function(data){ 
+			var availableWidth = width - margin.left - margin.right;
+			var container = d3.select(this);
+			
+			// set the width and height of the svg element
+			container.attr("width", width + margin.left + margin.right )
+		    container.attr("height", height + margin.top + margin.bottom );
+			
+			var wrap = container.selectAll('g.pie-chart-wrapper')
+								.data([data])
+								.enter()
+								.append('g')
+								.attr('class','pie-chart-wrapper')
+			
+			var topWrapper = wrap.selectAll('g.pie-chart-wrapper').data([data])
+
+			var pieWrap = topWrapper.enter()
+									.append('g')
+									.attr('class', 'pie-wrap')
+									.attr("transform", "translate(20,180)");
+
+			var legendWrap = topWrapper.enter()
+									   .append('g')
+									   .attr('class', 'legend-wrap')
+									   .attr("transform", "translate(120,20)");		
+									
+			legendWrap.datum(data).call(legend)
+									
+			var arcs =  pieWrap.selectAll('.pie-wrap')
+				.data(donut)
+				.enter().append("g")
+				.attr("class", "arc")
+				.attr("transform", "translate(" + radius + "," + radius + ")");		
+
+			var paths = arcs.append("path")
+			    .attr("fill", function(d, i) { return color[i]; });	
+
+
+				var paths = arcs.append("path")
+				    .attr("fill", function(d, i) { return color[i]; });
+
+				paths.transition()
+				    .duration(1000)
+				    .attrTween("d", tweenPie);
+
+				function tweenPie(b) {
+				  b.innerRadius = 0;
+				  var i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
+				  return function(t) {
+				    return arc(i(t));
+				  };
+				}
+
+			
+		});
+	}
+	return chart;
+}
+
+var myChart = socialq.models.pieChart();
+var data = d3.range(10).map(Math.random).sort(d3.descending).slice(0,ageRanges().length);
+var container = d3.select("#chart-svg")
+				  .datum(data)  
+				  .call(myChart)
+
+if( 0 ){
+	
 var width = 250,
     height = 400,
 	margin = { top : 20, bottom: 20, left:20, right: 20}
     radius = Math.min(width, height) / 2,
-    data = d3.range(10).map(Math.random).sort(d3.descending).slice(0,5),
+    data = d3.range(10).map(Math.random).sort(d3.descending).slice(0,ageRanges().length),
     color = getDashboardPieColors(),
     arc = d3.svg.arc().outerRadius(radius),
+	dispatch = d3.dispatch('legendClick', 'legendDblclick', 'legendMouseover', 'legendMouseout'),
     donut = d3.layout.pie();
+
+	var xxx = test_chart();
 
 	var container = d3.select("body").append("svg")
 	    .attr("width", width + margin.left + margin.right )
 	    .attr("height", height + margin.top + margin.bottom );
 
-
-	if ( 1 )
-	{
-		var wrap = container.selectAll('g.nv-wrap.nv-pieChart')
-							.data([data])
-							.enter()
+	var wrap = container.selectAll('g.nv-wrap.nv-pieChart')
+						.data([data])
+						.enter()
+						.append('g')
+						.attr('class','pie-chart-wrapper')
+							
+	var topWrapper = wrap.selectAll('g.pie-chart-wrapper').data([data])
+					
+	var pieWrap = topWrapper.enter()
 							.append('g')
-							.attr('class','pie-chart-wrapper')
-								
-		var topWrapper = wrap.selectAll('g.pie-chart-wrapper').data([data])
-						
-		var pieWrap = topWrapper.enter()
-								.append('g')
-								.attr('class', 'pie-wrap')
-								.attr("transform", "translate(20,120)")
-								
-		var legendWrap = topWrapper.enter().append('g')
-										   .attr('class', 'legend-wrap')
-										   .attr("transform", "translate(20,30)")
+							.attr('class', 'pie-wrap')
+							.attr("transform", "translate(20,180)");
+							
+	var legendWrap = topWrapper.enter()
+							   .append('g')
+							   .attr('class', 'legend-wrap')
+							   .attr("transform", "translate(120,20)");
+
 		
 		// pie - chart 
 		var arcs =  pieWrap.selectAll('.pie-wrap')
@@ -69,117 +192,43 @@ var width = 250,
 						.append('g')
 						.attr('class','sq-series')
 						.append('circle')
-						.attr('fill','#1f77b4')
-						.attr('r',5)
-						.attr("transform", function(d,i){ return "translate(" + 0 + "," + i*20 + ")" })
+						.attr('fill', function(d,i) { return getDashboardPieColors()[i]})
+						.attr('r',6)
+						.attr("transform", function(d,i){ return "translate(" + 0 + "," + i*20  + ")"  })
+						.on('click', function(d,i) {
+				            dispatch.legendClick(d,i);
+				          })
 			
 		legendWrap.selectAll(".sq-series")
 					.append('text')	
-					.text('fadsafdsadfs')
-					.attr("transform", function(d,i){ return "translate(" + 0 + "," + i*20 + ")" })	
+					.text(function(d,i) { return ageRanges()[i]; })
+					.attr("transform", function(d,i){ return "translate(" + 0 + "," + i*20  + ")"  })	
+					.attr('dx',15)
+					.attr('dy',5)
+
 	
-		var series = legend.selectAll('.sq-series')
-						.data(data)
-						.enter()
-						
+		dispatch.on('legendClick', function(d,i, that) {
+			console.log(d,i)
+		});
+		
+		var paths = arcs.append("path")
+		    .attr("fill", function(d, i) { return color[i]; });
+
+		paths.transition()
+		    .duration(1000)
+		    .attrTween("d", tweenPie);
+
+		function tweenPie(b) {
+		  b.innerRadius = 0;
+		  var i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
+		  return function(t) {
+		    return arc(i(t));
+		  };
+		}
+}		
+
 	
-		
-	}	
-	else 
-	{
-		// add g class=pie-chart-wrapper					
-		var wrap = container.selectAll('g.nv-wrap.nv-pieChart')
-							.data([data])
-							.enter()
-							.append('g')
-							.attr('class','pie-chart-wrapper')
-								
-		var topWrapper = wrap.selectAll('g.pie-chart-wrapper').data([data])
-						
-		var pieWrap = topWrapper.enter().append('g').attr('class', 'pie-wrap')
-		var legendWrap = topWrapper.enter().append('g').attr('class', 'legend-wrap')
-		
-	}
-
-
-	// var wrap = container.selectAll('g.nv-wrap.nv-pieChart')
-	// 					.data([data]);
-	// 
-	// var gEnter = wrap.enter().append('g')
-	// 				.attr('class', 'nvd3 nv-wrap nv-pieChart')
-	// 				.append('g');
-	// 			
-	// var g = wrap.select('g');
-	// 
-	// gEnter.append('g').attr('class', 'nv-pieWrap');
-	// gEnter.append('g').attr('class', 'nv-legendWrap');
-	// 
-	// // pie charts
-	// 
-	// wrap.select('.nv-pieWrap')
-	// 	.data(donut)
-	// 	.enter().append("g")
-	// 	.attr("class", "arc")
-	// 	.attr("transform", "translate(" + radius + "," + radius + ")");
-
-
-
-// var arcs = container.selectAll("g.arc")
-// 			.data(donut)
-// 			.enter().append("g")
-// 			.attr("class", "arc")
-// 			.attr("transform", "translate(" + radius + "," + radius + ")");
-// 				
-// 				
-// var wrap = container.selectAll(".legend-wrap")
-// 				.data([1]).enter()
-// 				.append('g')
-// 				.attr('class', 'legend-wrap')
-// 				.attr("transform", "translate(20,20)")
-// 		
-// var legend = wrap.selectAll(".legend")
-// 				.data(data)
-// 				.enter()
-// 				.append('g')
-// 				.attr('class','sq-series')
-// 				.append('circle')
-// 				.attr('fill','#1f77b4')
-// 				.attr('r',5)
-// 				.attr("transform", function(d,i){ return "translate(" + i*70 + ",0)" })
-// 				.append('text')
-
-
-
-				
-// 
-// var legend = vis.enter().append('g')
-// 				.attr('class', 'legend')
-// 				.attr('width', width)
-// 				.attr('width', 400)
-// 				.append('g');
-
-
-
-
-var paths = arcs.append("path")
-    .attr("fill", function(d, i) { return color[i]; });
-
-paths.transition()
-    .duration(1000)
-    .attrTween("d", tweenPie);
-
-function tweenPie(b) {
-  b.innerRadius = 0;
-  var i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
-  return function(t) {
-    return arc(i(t));
-  };
-}
-
-
-
-
-
+	
 </script>
 
 
